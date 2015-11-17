@@ -79,12 +79,10 @@ RUN	dpkg --add-architecture i386 && \
 # Download Space Engineers Dedicated Server
 RUN cd /steamcmd && ./steamcmd.sh +login anonymous +force_install_dir /home/root/.wine/drive_c/users/root/DedicatedServer +app_update 298740 +quit
 
-RUN mkdir -p /host/docker /host/data /host/data/Mods /host/data/Saves 
-	
 ######################### END OF INSTALLATIONS ##########################
 
 # Add the dedicated server files.
-ADD SpaceEngineers-Dedicated.cfg /host
+ADD SpaceEngineers-Dedicated.cfg /home/root/
 
 ADD install.sh /install.sh
 RUN /install.sh && rm /install.sh

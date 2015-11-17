@@ -18,7 +18,9 @@ cat << EOF > ${entry_point}
 mkdir -p "${wine_appdata}"
 ln -s "/host" "${se_appdata}"
 
-bash
+# Set up a new server if no files where provided
+mkdir -p /host/docker /host/data /host/data/Mods /host/data/Saves 
+cp /home/root/SpaceEngineers-Dedicated.cfg /host/
 
 exec wine "${se_home}/DedicatedServer/SpaceEngineersDedicated.exe" "\$@"
 
