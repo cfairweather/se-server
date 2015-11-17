@@ -1,3 +1,4 @@
+
 # Space Engineers on Linux
 # Dockerfile based on original work by webanck.
 # See https://github.com/webanck/docker-wine-steam
@@ -5,14 +6,12 @@
 FROM ubuntu:14.04
 MAINTAINER Martin Røed Jacobsen <martin@saiban.no>
 
-# Creating the wine user and setting up dedicated non-root environment.
-# Replace 1001 by your user id (id -u) for X sharing.
-RUN useradd -u 256 -d /home/wine -m -s /bin/bash wine
-ENV HOME /home/wine
-WORKDIR /home/wine
+RUN mkdir -p /home/root
+ENV HOME /home/root
+WORKDIR /home/root
 
 # Setting up the wineprefix to force 32 bit architecture.
-ENV WINEPREFIX /home/wine/.wine
+ENV WINEPREFIX /home/root/.wine
 ENV WINEARCH win32
 
 # Disabling warning messages from wine, comment for debug purpose.
@@ -48,13 +47,13 @@ RUN	dpkg --add-architecture i386 && \
 	apt-get install -y --no-install-recommends winbind && \
 
 # Installation of winetricks tricks as wine user.
-	su -p -l wine -c winecfg && \
-	su -p -l wine -c 'xvfb-run -a winetricks -q corefonts' && \
-	su -p -l wine -c 'xvfb-run -a winetricks -q dotnet20' && \
-	su -p -l wine -c 'xvfb-run -a winetricks -q dotnet40' && \
-	su -p -l wine -c 'xvfb-run -a winetricks -q xna40' && \
-	su -p -l wine -c 'xvfb-run -a winetricks d3dx9' && \
-	su -p -l wine -c 'xvfb-run -a winetricks -q directplay' && \
+	su -p -l root -c winecfg && \
+	su -p -l root -c 'xvfb-run -a winetricks -q corefonts' && \
+	su -p -l root -c 'xvfb-run -a winetricks -q dotnet20' && \
+	su -p -l root -c 'xvfb-run -a winetricks -q dotnet40' && \
+	su -p -l root -c 'xvfb-run -a winetricks -q xna40' && \
+	su -p -l root -c 'xvfb-run -a winetricks d3dx9' && \
+	su -p -l root -c 'xvfb-run -a winetricks -q directplay' && \
 
 # Installation of git, build tools and sigmap.
 	apt-get install -y --no-install-recommends build-essential git-core && \
@@ -63,22 +62,33 @@ RUN	dpkg --add-architecture i386 && \
 	install sigmap/bin/sigmap /usr/local/bin/sigmap && \
 	rm -rf sigmap/ && \
 
+# Install SteamCMD
+        mkdir /steamcmd && cd /steamcmd && \
+        wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz && \
+        tar -xvzf steamcmd_linux.tar.gz && \
+
 # Cleaning up.
 	apt-get autoremove -y --purge build-essential git-core && \
 	apt-get autoremove -y --purge software-properties-common && \
 	apt-get autoremove -y --purge xvfb && \
 	apt-get autoremove -y --purge && \
 	apt-get clean -y && \
-	rm -rf /home/wine/.cache && \
+	rm -rf /home/root/.cache && \
 	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Download Space Engineers Dedicated Server
+RUN cd /steamcmd && ./steamcmd.sh +login anonymous +force_install_dir /home/root/.wine/drive_c/users/root/DedicatedServer +app_update 298740 +quit
+
+RUN mkdir -p /host/docker /host/data /host/data/Mods /host/data/Saves 
 	
 ######################### END OF INSTALLATIONS ##########################
 
 # Add the dedicated server files.
+ADD SpaceEngineers-Dedicated.cfg /host
+
 ADD install.sh /install.sh
 RUN /install.sh && rm /install.sh
 
 # Launching the server as the wine user.
-USER wine
 ENTRYPOINT ["/usr/local/bin/sigmap", "-m 15:2", "/usr/local/bin/space-engineers-server", "-noconsole"]
 CMD [""]
