@@ -20,7 +20,7 @@ ln -s "/host" "${se_appdata}"
 
 # Set up a new server if no files where provided
 mkdir -p /host/docker /host/data /host/data/Mods /host/data/Saves 
-cp /home/root/SpaceEngineers-Dedicated.cfg /host/
+yes n | cp -i /home/root/SpaceEngineers-Dedicated.cfg /host/ && echo
 
 exec wine "${se_home}/DedicatedServer/SpaceEngineersDedicated.exe" "\$@"
 
