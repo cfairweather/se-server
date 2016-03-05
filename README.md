@@ -73,7 +73,7 @@ sudo systemctl stop space-engineers
 This will give you live output from the server, as if it was running locally in your terminal.
 
 ```bash
-sudo journalctl --no-tail -f -u space-engineeers
+sudo journalctl --no-tail -f -u space-engineers
 ```
 
 ## Additional notes
